@@ -1,0 +1,80 @@
+{
+  "version": "3.0.0",
+
+  "metadata": {
+    "id": "code-spring",
+    "name": "Spring Boot Backend",
+    "kind": "code",
+    "layers": ["backend"],
+    "type": "spring",
+    "description": "Bare minimum Spring Boot REST API skeleton",
+    "version": "1.0.0",
+    "author": "Genesis Team",
+    "tags": ["spring", "java", "backend", "rest-api"]
+  },
+
+  "fields": [
+    {
+      "key": "javaVersion",
+      "label": "Java Version",
+      "type": "select",
+      "options": ["17", "21"],
+      "default": "21",
+      "required": true,
+      "description": "Java language version for compilation",
+      "category": "build"
+    },
+    {
+      "key": "springBootVersion",
+      "label": "Spring Boot Version",
+      "type": "select",
+      "options": ["3.4.1", "3.5.3"],
+      "default": "3.5.3",
+      "required": true,
+      "description": "Spring Boot platform version",
+      "category": "build"
+    },
+    {
+      "key": "buildTool",
+      "label": "Build Tool",
+      "type": "select",
+      "options": ["gradle", "maven"],
+      "default": "gradle",
+      "required": true,
+      "description": "Build tool (Gradle or Maven)",
+      "category": "build"
+    },
+    {
+      "key": "packaging",
+      "label": "Packaging",
+      "type": "select",
+      "options": ["jar", "war"],
+      "default": "jar",
+      "required": true,
+      "description": "Application packaging type",
+      "category": "build"
+    }
+  ],
+
+  "dependencies": {
+    "gradle": [
+      "implementation 'org.springframework.boot:spring-boot-starter-web'",
+      "testImplementation 'org.springframework.boot:spring-boot-starter-test'"
+    ],
+    "maven": [
+      "<dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-web</artifactId></dependency>",
+      "<dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>"
+    ]
+  },
+
+  "generation": {
+    "files": {
+      "remove": [
+        "src/main/resources/application.properties"
+      ]
+    },
+    "layers": {
+      "backend": {}
+    }
+  }
+}
