@@ -117,17 +117,24 @@ async function extractZipToMemory(zipPath, extractPath) {
           // Check if file is binary or text
           const isBinary = /\.(jar|class|png|jpg|jpeg|gif|ico|zip|gz|tar|war|ear)$/i.test(item.name);
 
+          // Check if file should be executable
+          // - gradlew and gradlew.bat
+          // - Shell scripts (*.sh)
+          const shouldBeExecutable = /^(gradlew|gradlew\.bat|.*\.sh)$/i.test(item.name);
+
           if (isBinary) {
             // Read binary files as base64 to preserve them in memory
             files[relativePath] = {
               type: 'binary',
-              content: fs.readFileSync(fullPath, 'base64')
+              content: fs.readFileSync(fullPath, 'base64'),
+              executable: shouldBeExecutable
             };
           } else {
             // Read text files as UTF-8
             files[relativePath] = {
               type: 'text',
-              content: fs.readFileSync(fullPath, 'utf8')
+              content: fs.readFileSync(fullPath, 'utf8'),
+              executable: shouldBeExecutable
             };
           }
         } catch (err) {
