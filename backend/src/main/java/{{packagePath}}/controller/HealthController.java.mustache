@@ -1,5 +1,7 @@
 package {{{javaPackageFull}}}.controller;
 
+import {{{javaPackageFull}}}.component.VersionProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,6 +15,9 @@ import java.util.HashMap;
 @RequestMapping("/api/v1")
 public class HealthController {
 
+    @Autowired
+    private VersionProperties versionProperties;
+
     @GetMapping("/health")
     public ResponseEntity<Map<String, Object>> health() {
         Map<String, Object> response = new HashMap<>();
@@ -20,6 +25,7 @@ public class HealthController {
         response.put("timestamp", LocalDateTime.now());
         response.put("service", "{{{projectName}}}-api");
         response.put("version", "{{{version}}}");
+        response.put("build", versionProperties);
         return ResponseEntity.ok(response);
     }
 }

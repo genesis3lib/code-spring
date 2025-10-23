@@ -83,6 +83,20 @@
     }
   },
 
+  "transformations": {
+    "replacements": [
+      {
+        "files": ["{{backendModule.moduleId}}/build.gradle"],
+        "operations": [
+          {
+            "find": "version = '0.0.1-SNAPSHOT'",
+            "replace": "version = project.hasProperty('versionArg') ? versionArg : '0.0.1-SNAPSHOT'"
+          }
+        ]
+      }
+    ]
+  },
+
   "gitignore": [
     "# Spring Boot / Gradle",
     "HELP.md",
