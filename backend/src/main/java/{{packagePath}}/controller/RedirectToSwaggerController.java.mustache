@@ -1,0 +1,22 @@
+package {{{javaPackageFull}}}.controller;
+
+import {{{javaPackageFull}}}.model.base.ResponseBody;
+import {{{javaPackageFull}}}.model.rsp.RedirectRsp;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/")
+public class RedirectToSwaggerController {
+
+    @GetMapping
+    public ResponseEntity<ResponseBody<RedirectRsp>> redirectToSwagger() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Location", "/swagger-ui/index.html");
+        return new ResponseEntity<>(headers, HttpStatus.FOUND);
+    }
+}

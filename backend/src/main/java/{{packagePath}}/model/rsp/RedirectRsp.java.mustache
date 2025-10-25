@@ -1,0 +1,15 @@
+package {{{javaPackageFull}}}.model.rsp;
+
+import {{{javaPackageFull}}}.model.base.ResponseBase;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class RedirectRsp implements ResponseBase {
+    private String status;
+}
