@@ -1,0 +1,15 @@
+package {{{javaPackageFull}}}.model.base;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class RequestBody<T extends RequestBase> {
+    private String requestId;
+    private T request;
+}

@@ -1,6 +1,8 @@
 package {{{javaPackageFull}}}.controller;
 
 import {{{javaPackageFull}}}.component.VersionProperties;
+import {{{javaPackageFull}}}.model.base.ResponseBody;
+import {{{javaPackageFull}}}.model.rsp.HealthRsp;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -8,8 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -19,13 +20,20 @@ public class HealthController {
     private VersionProperties versionProperties;
 
     @GetMapping("/health")
-    public ResponseEntity<Map<String, Object>> health() {
-        Map<String, Object> response = new HashMap<>();
-        response.put("status", "UP");
-        response.put("timestamp", LocalDateTime.now());
-        response.put("service", "{{{projectName}}}-api");
-        response.put("version", "{{{version}}}");
-        response.put("build", versionProperties);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<ResponseBody<HealthRsp>> health() {
+        HealthRsp healthRsp = HealthRsp.builder()
+            .status("UP")
+            .timestamp(LocalDateTime.now())
+            .service("{{{projectName}}}-api")
+            .version("{{{version}}}")
+            .build(versionProperties)
+            .build();
+
+        ResponseBody<HealthRsp> responseBody = ResponseBody.<HealthRsp>builder()
+            .requestId(UUID.randomUUID().toString())
+            .response(healthRsp)
+            .build();
+
+        return ResponseEntity.ok(responseBody);
     }
 }
