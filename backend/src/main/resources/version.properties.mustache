@@ -6,13 +6,13 @@
 gh.build=local
 gh.attempt=1
 gh.action=local-development
-gh.modifiedDate={{generatedDate}}
+gh.modifiedDate={{generatedAt}}
 gh.sha=local
 
 # To override these values during build, CI/CD should create this file with actual values
 # Example from GitHub Actions:
-# gh.build=$\{{github.run_number}}
-# gh.attempt=$\{{github.run_attempt}}
-# gh.action=$\{{github.workflow}}
+# gh.build=$\{{{githubVarsOpen}}} github.run_number {{{githubVarsClose}}}
+# gh.attempt=$\{{{githubVarsOpen}}} github.run_attempt {{{githubVarsClose}}}
+# gh.action=$\{{{githubVarsOpen}}} github.workflow {{{githubVarsClose}}}
 # gh.modifiedDate=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-# gh.sha=$\{{github.sha}}
+# gh.sha=$\{{{githubVarsOpen}}} github.sha {{{githubVarsClose}}}
