@@ -5,7 +5,7 @@
     "id": "code-spring",
     "name": "Spring Boot Backend",
     "kind": "code",
-    "layers": ["backend"],
+    "layers": ["backend", "cicd"],
     "type": "spring",
     "description": "Bare minimum Spring Boot REST API skeleton",
     "version": "1.0.0",
@@ -81,7 +81,8 @@
       ]
     },
     "layers": {
-      "backend": {}
+      "backend": {},
+      "cicd": {}
     }
   },
 
