@@ -17,7 +17,8 @@
       "java",
       "backend",
       "rest-api"
-    ]
+    ],
+    "providers": ["aws"]
   },
   "scaffoldConfigTemplate": [
     {
