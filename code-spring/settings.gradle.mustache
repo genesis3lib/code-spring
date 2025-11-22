@@ -1,1 +1,19 @@
+// Gradle version check - Spring Boot 4.x requires Gradle 8.14+
+// If you see this error, use ./gradlew instead of system gradle
+if (GradleVersion.current() < GradleVersion.version('8.14')) {
+    throw new GradleException("""
+        |Gradle ${GradleVersion.current().version} is not compatible with this project.
+        |Spring Boot 4.x requires Gradle 8.14 or later (or 9.x).
+        |
+        |Please use the Gradle Wrapper instead:
+        |    ./gradlew <command>
+        |
+        |For example:
+        |    ./gradlew build
+        |    ./gradlew bootRun
+        |
+        |Or upgrade your system Gradle to version 8.14+
+        """.stripMargin())
+}
+
 rootProject.name = '{{{backendModule.moduleId}}}-api'
