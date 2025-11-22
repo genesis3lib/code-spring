@@ -36,6 +36,9 @@ app:
     host: http://localhost:8080
     ui: http://localhost:3000
     buildTool: {{buildTool}}
+  # Disable custom security configuration for tests
+  security:
+    enabled: false
 
 logging:
   level:
