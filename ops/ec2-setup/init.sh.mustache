@@ -38,51 +38,75 @@ sudo mkdir -p /opt/{{backendModule.name}}/backups
 
 # 3. Install system dependencies
 echo "=== Installing system dependencies ==="
-sudo yum update -y
+
+# Detect OS and use appropriate package manager
+if grep -q "Amazon Linux 2023" /etc/os-release 2>/dev/null; then
+    echo "Detected Amazon Linux 2023"
+    PKG_MGR="dnf"
+    IS_AL2023="true"
+    sudo dnf update -y
+else
+    echo "Detected Amazon Linux 2 or other"
+    PKG_MGR="yum"
+    IS_AL2023="false"
+    sudo yum update -y
+fi
 
 # Install Java 21 (Amazon Corretto)
 echo "Installing Java 21 (Amazon Corretto)..."
 if command -v java &> /dev/null; then
-    echo "✅ Java is already installed:"
+    echo "Java is already installed:"
     java -version
 else
     echo "Installing Amazon Corretto 21..."
-    # Check OS version and install accordingly
-    if grep -q "Amazon Linux 2" /etc/os-release; then
-        echo "Detected Amazon Linux 2, installing Corretto 21..."
-        # Import Amazon Corretto public key and repository
+    if [ "$IS_AL2023" = "true" ]; then
+        # Amazon Linux 2023 - Corretto 21 available via dnf
+        echo "Using dnf to install Corretto 21..."
+        sudo dnf install -y java-21-amazon-corretto-devel
+    else
+        # Amazon Linux 2 - need to add Corretto repo first
+        echo "Adding Corretto repository for AL2..."
         sudo rpm --import https://yum.corretto.aws/corretto.key
         sudo curl -L -o /etc/yum.repos.d/corretto.repo https://yum.corretto.aws/corretto.repo
         sudo yum install -y java-21-amazon-corretto-devel
-    elif grep -q "Amazon Linux" /etc/os-release; then
-        echo "Detected Amazon Linux 2023+, installing Corretto 21..."
-        sudo yum install -y java-21-amazon-corretto-devel
-    else
-        echo "Unknown Linux distribution, trying default Java installation..."
-        sudo yum install -y java-21-amazon-corretto-devel || sudo yum install -y java-21-openjdk-devel || sudo yum install -y java-17-openjdk-devel
     fi
-    
+
     # Verify installation
     if command -v java &> /dev/null; then
-        echo "✅ Java installed successfully:"
+        echo "Java installed successfully:"
         java -version
     else
-        echo "❌ Java installation failed!"
+        echo "Java installation failed!"
         exit 1
     fi
 fi
 
-# Install PostgreSQL client (try multiple package names for compatibility)
+# Install PostgreSQL client
 echo "Installing PostgreSQL client..."
-sudo yum install -y postgresql postgresql-client || sudo yum install -y postgresql15 || echo "PostgreSQL client installation skipped"
+if [ "$PKG_MGR" = "dnf" ]; then
+    sudo dnf install -y postgresql15 || sudo dnf install -y postgresql || echo "PostgreSQL client installation skipped"
+else
+    sudo yum install -y postgresql postgresql-client || sudo yum install -y postgresql15 || echo "PostgreSQL client installation skipped"
+fi
 
 # Install Redis (optional, disable by default)
 echo "Installing Redis (disabled by default)..."
-sudo amazon-linux-extras install redis6 -y || sudo yum install -y redis || echo "Redis installation skipped"
+if [ "$IS_AL2023" = "true" ]; then
+    # AL2023 - redis available via dnf
+    sudo dnf install -y redis6 || sudo dnf install -y redis || echo "Redis installation skipped"
+else
+    # AL2 - use amazon-linux-extras
+    sudo amazon-linux-extras install redis6 -y || sudo yum install -y redis || echo "Redis installation skipped"
+fi
 sudo systemctl disable redis || sudo systemctl disable redis6 || echo "Redis service disable skipped"
 
 # Install other dependencies
-sudo yum install -y awscli jq wget curl unzip
+echo "Installing other dependencies..."
+if [ "$PKG_MGR" = "dnf" ]; then
+    sudo dnf install -y awscli jq wget curl unzip
+else
+    sudo yum install -y awscli jq wget curl unzip
+fi
 
 echo "=== Verifying installed packages ==="
 java -version
