@@ -6,7 +6,8 @@
     "kind": "code",
     "layers": [
       "backend",
-      "cicd"
+      "cicd",
+      "ops"
     ],
     "type": "spring",
     "description": "Bare minimum Spring Boot REST API skeleton",
@@ -139,7 +140,8 @@
     },
     "layers": {
       "backend": {},
-      "cicd": {}
+      "cicd": {},
+      "ops": {}
     }
   },
   "transformations": {
