@@ -40,12 +40,11 @@ sudo mkdir -p /opt/{{backendModule.name}}/backups
 echo "=== Installing system dependencies ==="
 
 # Detect OS and use appropriate package manager
-# Note: Skip 'dnf update' on AL2023 - fresh AMI doesn't need updates and it can cause curl-minimal conflicts
 if grep -q "Amazon Linux 2023" /etc/os-release 2>/dev/null; then
     echo "Detected Amazon Linux 2023"
     PKG_MGR="dnf"
     IS_AL2023="true"
-    # Skip dnf update - fresh AMI, and update can cause package conflicts
+    sudo dnf update -y
 else
     echo "Detected Amazon Linux 2 or other"
     PKG_MGR="yum"
@@ -102,7 +101,7 @@ fi
 sudo systemctl disable redis || sudo systemctl disable redis6 || echo "Redis service disable skipped"
 
 # Install other dependencies
-# Note: Don't install 'curl' on AL2023 - it has curl-minimal pre-installed which conflicts with curl
+# Note: Don't install 'curl' on AL2023 - curl-minimal is pre-installed and provides the curl command
 echo "Installing other dependencies..."
 if [ "$PKG_MGR" = "dnf" ]; then
     sudo dnf install -y awscli jq wget unzip
