@@ -283,10 +283,41 @@ else
     echo "ℹ️ Continuing without secrets"
 fi
 
-# Check if we have the minimum required configuration
-if ! grep -q "SPRING_DATASOURCE_URL" "$TEMP_SPRING_ENV"; then
-    echo "⚠️ Warning: No database configuration found in secrets"
-    echo "⚠️ Application may fail to start without database connection"
+# Construct SPRING_DATASOURCE_* from individual DB_* fields if not already present
+if ! grep -q "^SPRING_ENV_SPRING_DATASOURCE_URL=" "$TEMP_SPRING_ENV"; then
+    echo "SPRING_DATASOURCE_URL not found, checking for individual DB_* fields..."
+
+    # Extract individual DB fields from secrets (check both prefixed and unprefixed)
+    DB_HOST=$(echo "$SECRET_JSON" | jq -r '.DB_HOST // empty')
+    DB_PORT=$(echo "$SECRET_JSON" | jq -r '.DB_PORT // empty')
+    DB_NAME=$(echo "$SECRET_JSON" | jq -r '.DB_NAME // empty')
+    DB_USERNAME=$(echo "$SECRET_JSON" | jq -r '.DB_USERNAME // empty')
+    DB_PASSWORD=$(echo "$SECRET_JSON" | jq -r '.DB_PASSWORD // empty')
+
+    if [ -n "$DB_HOST" ] && [ -n "$DB_NAME" ]; then
+        # Default port to 5432 if not specified
+        DB_PORT=${DB_PORT:-5432}
+
+        # Construct Spring datasource URL (JDBC format)
+        SPRING_DATASOURCE_URL="jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}"
+        echo "SPRING_ENV_SPRING_DATASOURCE_URL=$SPRING_DATASOURCE_URL" >> "$TEMP_SPRING_ENV"
+        echo "✅ Constructed SPRING_DATASOURCE_URL from DB_* fields"
+
+        # Add username and password if present
+        if [ -n "$DB_USERNAME" ]; then
+            echo "SPRING_ENV_SPRING_DATASOURCE_USERNAME=$DB_USERNAME" >> "$TEMP_SPRING_ENV"
+            echo "✅ Set SPRING_DATASOURCE_USERNAME"
+        fi
+        if [ -n "$DB_PASSWORD" ]; then
+            echo "SPRING_ENV_SPRING_DATASOURCE_PASSWORD=$DB_PASSWORD" >> "$TEMP_SPRING_ENV"
+            echo "✅ Set SPRING_DATASOURCE_PASSWORD"
+        fi
+    else
+        echo "⚠️ Warning: No database configuration found in secrets"
+        echo "⚠️ Application may fail to start without database connection"
+    fi
+else
+    echo "✅ SPRING_DATASOURCE_URL already present in secrets"
 fi
 
 # Final summary
