@@ -19,7 +19,17 @@
       "backend",
       "rest-api"
     ],
-    "providers": ["aws"]
+    "providers": [
+      "aws"
+    ],
+    "providesFragments": {
+      "backend-api": {
+        "mode": "warn"
+      }
+    },
+    "onWarn": {
+      "message": "Multiple backend frameworks selected. This is unusual but allowed if you need multiple API services."
+    }
   },
   "scaffoldConfigTemplate": [
     {
