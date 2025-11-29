@@ -239,9 +239,9 @@ if [ "$BASE_PROFILE" = "prod" ] || [ "$BASE_PROFILE" = "production" ]; then
     APP_ENV_HOST="https://{{projectName}}-api.{{domain}}"
     APP_ENV_UI="https://{{projectName}}-ui.{{domain}}"
 else
-    # Non-production environment - include environment prefix
-    APP_ENV_HOST="https://{{projectName}}-${BASE_PROFILE}-api.{{domain}}"
-    APP_ENV_UI="https://{{projectName}}-${BASE_PROFILE}-ui.{{domain}}"
+    # Non-production environment - include environment suffix
+    APP_ENV_HOST="https://{{projectName}}-api-${BASE_PROFILE}.{{domain}}"
+    APP_ENV_UI="https://{{projectName}}-ui-${BASE_PROFILE}.{{domain}}"
 fi
 
 echo "APP_ENV_HOST=$APP_ENV_HOST" >> "$TEMP_SPRING_ENV"
