@@ -35,10 +35,11 @@
       "key": "javaVersion",
       "label": "Java Version",
       "type": "select",
-      "options": [
-        "17",
-        "21"
-      ],
+      "options": ["17", "21"],
+      "optionNotes": {
+        "17": { "notes": "LTS - broad compatibility" },
+        "21": { "notes": "Latest LTS - recommended" }
+      },
       "default": "21",
       "required": true,
       "description": "Java language version for compilation",
@@ -48,10 +49,11 @@
       "key": "springBootVersion",
       "label": "Spring Boot Version",
       "type": "select",
-      "options": [
-        "3.4.1",
-        "3.5.3"
-      ],
+      "options": ["3.4.1", "3.5.3"],
+      "optionNotes": {
+        "3.4.1": { "notes": "Stable" },
+        "3.5.3": { "notes": "Latest - recommended" }
+      },
       "default": "3.5.3",
       "required": true,
       "description": "Spring Boot platform version",
@@ -61,10 +63,11 @@
       "key": "buildTool",
       "label": "Build Tool",
       "type": "select",
-      "options": [
-        "gradle",
-        "maven"
-      ],
+      "options": ["gradle", "maven"],
+      "optionNotes": {
+        "gradle": { "notes": "Fast, flexible - recommended" },
+        "maven": { "notes": "Convention-based, verbose XML" }
+      },
       "default": "gradle",
       "required": true,
       "description": "Build tool (Gradle or Maven)",
@@ -74,10 +77,11 @@
       "key": "packaging",
       "label": "Packaging",
       "type": "select",
-      "options": [
-        "jar",
-        "war"
-      ],
+      "options": ["jar", "war"],
+      "optionNotes": {
+        "jar": { "notes": "Standalone executable - recommended" },
+        "war": { "notes": "For external servlet containers" }
+      },
       "default": "jar",
       "required": true,
       "description": "Application packaging type",
