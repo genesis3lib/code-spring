@@ -177,13 +177,13 @@ jobs:
           
           # Sync the staging/jars directory to S3
           echo "🚀 Syncing JAR to S3..."
-          if aws s3 sync ./staging/jars/ "s3://${OPS_BUCKET}/jars/" --region {{{githubVarsOpen}}} env.AWS_REGION  {{{githubVarsClose}}}; then
+          if aws s3 sync ./staging/jars/ "s3://${OPS_BUCKET}/modules/{{backendModule.moduleId}}/jars/" --region {{{githubVarsOpen}}} env.AWS_REGION  {{{githubVarsClose}}}; then
             echo "✅ Successfully synced JAR to S3 ops bucket"
             echo "JAR_NAME=${JAR_NAME}" >> $GITHUB_ENV
             
             # Verify what was uploaded
             echo "🔍 Verifying uploaded JAR:"
-            aws s3 ls "s3://${OPS_BUCKET}/jars/${JAR_NAME}" --region {{{githubVarsOpen}}} env.AWS_REGION  {{{githubVarsClose}}}
+            aws s3 ls "s3://${OPS_BUCKET}/modules/{{backendModule.moduleId}}/jars/${JAR_NAME}" --region {{{githubVarsOpen}}} env.AWS_REGION  {{{githubVarsClose}}}
             
             # Clean up staging directory
             rm -rf ./staging
@@ -197,7 +197,7 @@ jobs:
         run: |
           echo "📋 Syncing latest EC2 setup scripts from Git to S3..."
           echo "Source: ./{{backendModule.moduleId}}/ec2-setup/"
-          echo "Target: s3://${OPS_BUCKET}/ec2-setup/"
+          echo "Target: s3://${OPS_BUCKET}/modules/{{backendModule.moduleId}}/ec2-setup/"
 
           # Verify source directory exists
           if [ ! -d "./{{backendModule.moduleId}}/ec2-setup" ]; then
@@ -219,12 +219,12 @@ jobs:
           ls -la ./{{backendModule.moduleId}}/ec2-setup/
 
           # Sync EC2 setup scripts to S3 with delete flag to remove old files
-          if aws s3 sync ./{{backendModule.moduleId}}/ec2-setup/ "s3://${OPS_BUCKET}/ec2-setup/" --delete --region {{{githubVarsOpen}}} env.AWS_REGION  {{{githubVarsClose}}}; then
+          if aws s3 sync ./{{backendModule.moduleId}}/ec2-setup/ "s3://${OPS_BUCKET}/modules/{{backendModule.moduleId}}/ec2-setup/" --delete --region {{{githubVarsOpen}}} env.AWS_REGION  {{{githubVarsClose}}}; then
             echo "✅ Successfully synced EC2 setup scripts to S3"
 
             # Verify what was uploaded
             echo "🔍 Verifying uploaded files:"
-            aws s3 ls "s3://${OPS_BUCKET}/ec2-setup/" --region {{{githubVarsOpen}}} env.AWS_REGION  {{{githubVarsClose}}}
+            aws s3 ls "s3://${OPS_BUCKET}/modules/{{backendModule.moduleId}}/ec2-setup/" --region {{{githubVarsOpen}}} env.AWS_REGION  {{{githubVarsClose}}}
           else
             echo "❌ Failed to sync EC2 setup scripts to S3"
             exit 1
@@ -246,7 +246,7 @@ jobs:
             --parameters 'commands=[
               "echo \"=== Syncing EC2 setup scripts from S3 ===\"",
               "sudo mkdir -p /opt/{{backendModule.name}}/ec2-setup",
-              "aws s3 sync s3://'${OPS_BUCKET}'/ec2-setup/ /opt/{{backendModule.name}}/ec2-setup/ --region '${AWS_REGION}'",
+              "aws s3 sync s3://'${OPS_BUCKET}'/modules/{{backendModule.moduleId}}/ec2-setup/ /opt/{{backendModule.name}}/ec2-setup/ --region '${AWS_REGION}'",
               "sudo chmod +x /opt/{{backendModule.name}}/ec2-setup/*.sh",
               "echo \"=== Running initialization script ===\"",
               "sudo /opt/{{backendModule.name}}/ec2-setup/init.sh '${JAR_NAME}' '${SPRING_PROFILE}'"

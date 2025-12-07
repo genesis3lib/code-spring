@@ -137,14 +137,14 @@ else
     ENV_FOR_S3="production"
 fi
 
-echo "Source: s3://{{projectName}}-${ENV_FOR_S3}-ops-${AWS_ACCOUNT_ID}/ec2-setup/"
+echo "Source: s3://{{projectName}}-${ENV_FOR_S3}-ops-${AWS_ACCOUNT_ID}/modules/{{backendModule.moduleId}}/ec2-setup/"
 echo "Target: /opt/{{backendModule.name}}/ec2-setup/"
 
 # Create target directory if it doesn't exist
 sudo mkdir -p /opt/{{backendModule.name}}/ec2-setup
 
 # Sync all files from S3 ec2-setup directory
-if sudo aws s3 sync s3://{{projectName}}-${ENV_FOR_S3}-ops-${AWS_ACCOUNT_ID}/ec2-setup/ /opt/{{backendModule.name}}/ec2-setup/; then
+if sudo aws s3 sync s3://{{projectName}}-${ENV_FOR_S3}-ops-${AWS_ACCOUNT_ID}/modules/{{backendModule.moduleId}}/ec2-setup/ /opt/{{backendModule.name}}/ec2-setup/; then
     echo "✅ Successfully synced EC2 setup scripts from S3"
     
     # Make all shell scripts executable
@@ -345,7 +345,7 @@ fi
 
 # 10. Download new JAR from S3
 echo "=== Downloading new JAR file ==="
-if sudo aws s3 cp "s3://{{projectName}}-${ENV_FOR_S3}-ops-${AWS_ACCOUNT_ID}/jars/$JAR_NAME" /opt/{{backendModule.name}}/lib/app.jar; then
+if sudo aws s3 cp "s3://{{projectName}}-${ENV_FOR_S3}-ops-${AWS_ACCOUNT_ID}/modules/{{backendModule.moduleId}}/jars/$JAR_NAME" /opt/{{backendModule.name}}/lib/app.jar; then
     echo "✅ Successfully downloaded $JAR_NAME from S3"
     sudo chown {{backendModule.name}}:{{backendModule.name}} /opt/{{backendModule.name}}/lib/app.jar
     sudo chmod 644 /opt/{{backendModule.name}}/lib/app.jar
