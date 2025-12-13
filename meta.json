@@ -170,5 +170,38 @@
         ]
       }
     ]
+  },
+  "gitIgnore": {
+    "spring": [
+      "# Local development",
+      ".pids/",
+      ".logs/",
+      "",
+      "# Java/Gradle",
+      "build/",
+      ".gradle/",
+      "*.class",
+      "*.jar",
+      "*.war",
+      "*.ear",
+      "",
+      "# IDE files",
+      ".idea/",
+      "*.iml",
+      ".vscode/",
+      "*.suo",
+      "*.ntvs*",
+      "*.njsproj",
+      "*.sln",
+      "*.sw?",
+      "",
+      "# OS files",
+      ".DS_Store",
+      "Thumbs.db",
+      "",
+      "# Logs",
+      "logs/",
+      "*.log"
+    ]
   }
 }
