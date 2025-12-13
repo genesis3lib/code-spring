@@ -257,6 +257,20 @@ setup_frontend() {
 }
 {{/hasFrontend}}
 
+# Load environment variables from .env file
+load_env_file() {
+    local env_file="$1"
+    if [ -f "$env_file" ]; then
+        print_info "Loading environment from $env_file"
+        # Export all non-comment, non-empty lines as environment variables
+        set -a
+        source "$env_file"
+        set +a
+        return 0
+    fi
+    return 1
+}
+
 # Start backend server
 start_backend() {
     print_header "Starting Backend Server"
@@ -275,9 +289,18 @@ start_backend() {
     # Create directories
     mkdir -p "$PID_DIR" "$LOG_DIR"
 
+    # Load backend .env.dev file if exists (for Auth0 and other env vars)
+    if [ -f "$BACKEND_DIR/.env.dev" ]; then
+        load_env_file "$BACKEND_DIR/.env.dev"
+    elif [ -f "$BACKEND_DIR/.env" ]; then
+        load_env_file "$BACKEND_DIR/.env"
+    fi
+
     print_info "Starting Spring Boot on port $BACKEND_PORT..."
 
     (cd "$BACKEND_DIR" && \
+        # Re-source the env file inside subshell to ensure vars are available
+        if [ -f ".env.dev" ]; then set -a && source .env.dev && set +a; fi && \
         SPRING_PROFILES_ACTIVE=dev \
         nohup ./gradlew bootRun --no-daemon > "$BACKEND_LOG" 2>&1 &
         echo $! > "$BACKEND_PID_FILE"
@@ -317,8 +340,9 @@ start_frontend() {
 
     print_info "Starting Vite development server on port $FRONTEND_PORT..."
 
+    # Run Vite with --mode dev to load .env.dev (which has runtime config values)
     (cd "$FRONTEND_DIR" && \
-        nohup npm run dev > "$FRONTEND_LOG" 2>&1 &
+        nohup npm run dev -- --mode dev > "$FRONTEND_LOG" 2>&1 &
         echo $! > "$FRONTEND_PID_FILE"
     )
 
