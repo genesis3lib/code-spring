@@ -9,6 +9,7 @@
       "cicd"
     ],
     "type": "spring",
+    "providers": ["aws"],
     "description": "Bare minimum Spring Boot REST API skeleton",
     "version": "1.0.0",
     "author": "Genesis Team",
@@ -17,9 +18,6 @@
       "java",
       "backend",
       "rest-api"
-    ],
-    "providers": [
-      "aws"
     ],
     "providesFragments": {
       "backend-api": {
