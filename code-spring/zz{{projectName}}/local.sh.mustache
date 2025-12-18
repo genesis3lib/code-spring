@@ -301,7 +301,7 @@ start_backend() {
     (cd "$BACKEND_DIR" && \
         # Re-source the env file inside subshell to ensure vars are available
         if [ -f ".env.dev" ]; then set -a && source .env.dev && set +a; fi && \
-        SPRING_PROFILES_ACTIVE=dev \
+        SPRING_PROFILES_ACTIVE={{#springProfilesJoined}}{{{springProfilesJoined}}}{{/springProfilesJoined}}{{^springProfilesJoined}}dev{{/springProfilesJoined}} \
         nohup ./gradlew bootRun --no-daemon > "$BACKEND_LOG" 2>&1 &
         echo $! > "$BACKEND_PID_FILE"
     )
