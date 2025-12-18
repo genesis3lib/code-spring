@@ -138,13 +138,13 @@ jobs:
             exit 1
           fi
 
-          # Copy genesis3.json to ec2-setup directory for deployment
-          if [ -f "./genesis3.json" ]; then
-            echo "📋 Copying genesis3.json to ec2-setup directory..."
-            cp ./genesis3.json ./{{backendModule.moduleId}}/ec2-setup/genesis3.json
-            echo "✅ genesis3.json copied"
+          # Copy zz_grablin.json to ec2-setup directory as genesis3.json for deployment
+          if [ -f "./zz_grablin.json" ]; then
+            echo "📋 Copying zz_grablin.json to ec2-setup/genesis3.json..."
+            cp ./zz_grablin.json ./{{backendModule.moduleId}}/ec2-setup/genesis3.json
+            echo "✅ genesis3.json created from zz_grablin.json"
           else
-            echo "⚠️ genesis3.json not found in project root"
+            echo "⚠️ zz_grablin.json not found in project root"
           fi
 
           # Show what we're about to sync
