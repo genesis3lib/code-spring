@@ -439,4 +439,47 @@ sudo systemctl status {{backendModule.name}}-api.service --no-pager -l
 echo
 echo "=== Recent Error Logs ==="
 sudo journalctl -u {{backendModule.name}}-api.service -n 20 --no-pager
-exit 1
+
+# Try to restore backup JAR to keep service alive (prevents ASG from terminating instance)
+echo
+echo "=== Attempting to restore previous stable JAR ==="
+LATEST_BACKUP=$(ls -t /opt/{{backendModule.name}}/lib/app.jar.backup.* 2>/dev/null | head -1)
+if [ -n "$LATEST_BACKUP" ] && [ -f "$LATEST_BACKUP" ]; then
+    echo "📋 Found backup: $LATEST_BACKUP"
+    echo "🔄 Restoring backup JAR to keep service alive..."
+
+    # Move failed JAR aside for debugging
+    FAILED_JAR="/opt/{{backendModule.name}}/lib/app.jar.failed.$(date +%Y%m%d_%H%M%S)"
+    sudo mv /opt/{{backendModule.name}}/lib/app.jar "$FAILED_JAR"
+    echo "📋 Failed JAR saved as: $FAILED_JAR"
+
+    # Restore backup
+    sudo cp "$LATEST_BACKUP" /opt/{{backendModule.name}}/lib/app.jar
+    sudo chown {{backendModule.name}}:{{backendModule.name}} /opt/{{backendModule.name}}/lib/app.jar
+    sudo chmod 644 /opt/{{backendModule.name}}/lib/app.jar
+
+    # Restart with restored JAR
+    echo "🔄 Restarting service with restored JAR..."
+    sudo systemctl restart {{backendModule.name}}-api.service
+    sleep 10
+
+    if systemctl is-active --quiet {{backendModule.name}}-api.service; then
+        echo "✅ Service restored successfully with previous JAR!"
+        echo "⚠️ WARNING: Deployment failed but service is running with PREVIOUS version"
+        echo "⚠️ Please fix the new JAR and redeploy"
+        echo
+        echo "=== Service Status (restored) ==="
+        sudo systemctl status {{backendModule.name}}-api.service --no-pager -l
+        # Exit with error to signal deployment failed, but service is alive
+        exit 1
+    else
+        echo "❌ Restored JAR also failed to start!"
+        echo "❌ Service is DOWN - manual intervention required"
+        exit 1
+    fi
+else
+    echo "⚠️ No backup JAR found to restore"
+    echo "❌ Service is DOWN - this may be a virgin deployment failure"
+    echo "❌ Manual intervention required"
+    exit 1
+fi
