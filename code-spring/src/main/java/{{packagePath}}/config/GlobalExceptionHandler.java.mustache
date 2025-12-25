@@ -1,25 +1,22 @@
 package {{{javaPackageFull}}}.config;
 
-import {{{javaPackageFull}}}.jpa.enumtype.ErrorCode;
 import {{{javaPackageFull}}}.model.base.Fault;
-import {{{javaPackageFull}}}.model.base.ResponseBase;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
  * Global exception handler providing consistent error responses across all endpoints.
- * Maps exceptions to appropriate HTTP status codes and error codes.
+ * Maps exceptions to appropriate HTTP status codes and error responses.
  */
 @Slf4j
 @RestControllerAdvice
@@ -29,7 +26,7 @@ public class GlobalExceptionHandler {
      * Handle validation errors from @Valid annotations
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ResponseBase<Void>> handleValidationException(
+    public ResponseEntity<Map<String, Object>> handleValidationException(
             MethodArgumentNotValidException ex, HttpServletRequest request) {
 
         String details = ex.getBindingResult().getFieldErrors().stream()
@@ -40,43 +37,11 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .body(ResponseBase.error(
-                ErrorCode.VALIDATION_ERROR.getCode(),
-                details.isEmpty() ? ErrorCode.VALIDATION_ERROR.getDescription() : details
-            ));
-    }
-
-    /**
-     * Handle authentication failures
-     */
-    @ExceptionHandler(AuthenticationException.class)
-    public ResponseEntity<ResponseBase<Void>> handleAuthenticationException(
-            AuthenticationException ex, HttpServletRequest request) {
-
-        log.warn("Authentication failed on {}: {}", request.getRequestURI(), ex.getMessage());
-
-        return ResponseEntity
-            .status(HttpStatus.UNAUTHORIZED)
-            .body(ResponseBase.error(
-                ErrorCode.UNAUTHORIZED.getCode(),
-                ErrorCode.UNAUTHORIZED.getDescription()
-            ));
-    }
-
-    /**
-     * Handle authorization failures (insufficient permissions)
-     */
-    @ExceptionHandler(AccessDeniedException.class)
-    public ResponseEntity<ResponseBase<Void>> handleAccessDeniedException(
-            AccessDeniedException ex, HttpServletRequest request) {
-
-        log.warn("Access denied on {}: {}", request.getRequestURI(), ex.getMessage());
-
-        return ResponseEntity
-            .status(HttpStatus.FORBIDDEN)
-            .body(ResponseBase.error(
-                ErrorCode.FORBIDDEN.getCode(),
-                ErrorCode.FORBIDDEN.getDescription()
+            .body(Map.of(
+                "fault", Fault.builder()
+                    .code("VAL001")
+                    .description(details.isEmpty() ? "Validation error" : details)
+                    .build()
             ));
     }
 
@@ -84,16 +49,18 @@ public class GlobalExceptionHandler {
      * Handle resource not found (404)
      */
     @ExceptionHandler(NoHandlerFoundException.class)
-    public ResponseEntity<ResponseBase<Void>> handleNotFoundException(
+    public ResponseEntity<Map<String, Object>> handleNotFoundException(
             NoHandlerFoundException ex, HttpServletRequest request) {
 
         log.debug("Resource not found: {}", request.getRequestURI());
 
         return ResponseEntity
             .status(HttpStatus.NOT_FOUND)
-            .body(ResponseBase.error(
-                ErrorCode.RESOURCE_NOT_FOUND.getCode(),
-                ErrorCode.RESOURCE_NOT_FOUND.getDescription()
+            .body(Map.of(
+                "fault", Fault.builder()
+                    .code("RES001")
+                    .description("Resource not found")
+                    .build()
             ));
     }
 
@@ -101,16 +68,18 @@ public class GlobalExceptionHandler {
      * Handle illegal argument exceptions
      */
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ResponseBase<Void>> handleIllegalArgumentException(
+    public ResponseEntity<Map<String, Object>> handleIllegalArgumentException(
             IllegalArgumentException ex, HttpServletRequest request) {
 
         log.warn("Invalid argument on {}: {}", request.getRequestURI(), ex.getMessage());
 
         return ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .body(ResponseBase.error(
-                ErrorCode.INVALID_INPUT.getCode(),
-                ex.getMessage()
+            .body(Map.of(
+                "fault", Fault.builder()
+                    .code("VAL002")
+                    .description(ex.getMessage())
+                    .build()
             ));
     }
 
@@ -118,7 +87,7 @@ public class GlobalExceptionHandler {
      * Handle all other uncaught exceptions
      */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ResponseBase<Void>> handleGenericException(
+    public ResponseEntity<Map<String, Object>> handleGenericException(
             Exception ex, HttpServletRequest request) {
 
         // Log the full stack trace for debugging
@@ -127,9 +96,11 @@ public class GlobalExceptionHandler {
         // Return generic error to client (don't leak internal details)
         return ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(ResponseBase.error(
-                ErrorCode.INTERNAL_ERROR.getCode(),
-                ErrorCode.INTERNAL_ERROR.getDescription()
+            .body(Map.of(
+                "fault", Fault.builder()
+                    .code("SRV001")
+                    .description("Internal server error")
+                    .build()
             ));
     }
 }

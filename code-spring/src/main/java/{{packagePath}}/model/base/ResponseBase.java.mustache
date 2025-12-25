@@ -1,68 +1,8 @@
 package {{{javaPackageFull}}}.model.base;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 /**
- * Standard API response wrapper providing consistent structure for all responses.
- * Separates fault information from response body for clean error handling.
- *
- * @param <T> The type of the response body
+ * Marker interface for API response DTOs.
+ * Implement this interface for any response object used in API endpoints.
  */
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class ResponseBase<T> {
-
-    /**
-     * Fault information present only when an error occurs
-     */
-    private Fault fault;
-
-    /**
-     * Response body present only on successful responses
-     */
-    private T body;
-
-    /**
-     * Create a successful response with body
-     */
-    public static <T> ResponseBase<T> success(T body) {
-        return ResponseBase.<T>builder()
-            .body(body)
-            .build();
-    }
-
-    /**
-     * Create an error response with fault information
-     */
-    public static <T> ResponseBase<T> error(String code, String description) {
-        return ResponseBase.<T>builder()
-            .fault(Fault.builder()
-                .code(code)
-                .description(description)
-                .build())
-            .build();
-    }
-
-    /**
-     * Create an error response from a Fault object
-     */
-    public static <T> ResponseBase<T> error(Fault fault) {
-        return ResponseBase.<T>builder()
-            .fault(fault)
-            .build();
-    }
-
-    /**
-     * Check if the response indicates success (no fault)
-     */
-    public boolean isSuccess() {
-        return fault == null;
-    }
+public interface ResponseBase {
 }
