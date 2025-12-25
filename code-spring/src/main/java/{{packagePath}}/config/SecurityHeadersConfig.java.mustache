@@ -1,0 +1,74 @@
+package {{{javaPackageFull}}}.config;
+
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+
+import java.io.IOException;
+
+/**
+ * Security headers configuration implementing OWASP best practices.
+ * Adds essential security headers to all HTTP responses.
+ */
+@Configuration
+public class SecurityHeadersConfig {
+
+    @Bean
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    public Filter securityHeadersFilter() {
+        return new Filter() {
+            @Override
+            public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+                    throws IOException, ServletException {
+
+                HttpServletResponse httpResponse = (HttpServletResponse) response;
+
+                // Prevent clickjacking attacks
+                httpResponse.setHeader("X-Frame-Options", "DENY");
+
+                // Enable XSS filter in browser
+                httpResponse.setHeader("X-XSS-Protection", "1; mode=block");
+
+                // Prevent MIME type sniffing
+                httpResponse.setHeader("X-Content-Type-Options", "nosniff");
+
+                // Content Security Policy - adjust as needed for your app
+                httpResponse.setHeader("Content-Security-Policy",
+                    "default-src 'self'; " +
+                    "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+                    "style-src 'self' 'unsafe-inline'; " +
+                    "img-src 'self' data: https:; " +
+                    "font-src 'self' data:; " +
+                    "connect-src 'self' https:; " +
+                    "frame-ancestors 'none'");
+
+                // Referrer Policy - don't leak referrer to external sites
+                httpResponse.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+
+                // Permissions Policy - restrict browser features
+                httpResponse.setHeader("Permissions-Policy",
+                    "geolocation=(), " +
+                    "microphone=(), " +
+                    "camera=(), " +
+                    "payment=()");
+
+                // HTTP Strict Transport Security (1 year, include subdomains)
+                httpResponse.setHeader("Strict-Transport-Security",
+                    "max-age=31536000; includeSubDomains; preload");
+
+                // Cache control for API responses
+                httpResponse.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+                httpResponse.setHeader("Pragma", "no-cache");
+
+                chain.doFilter(request, response);
+            }
+        };
+    }
+}

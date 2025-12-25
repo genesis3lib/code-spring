@@ -1,0 +1,135 @@
+package {{{javaPackageFull}}}.config;
+
+import {{{javaPackageFull}}}.jpa.enumtype.ErrorCode;
+import {{{javaPackageFull}}}.model.base.Fault;
+import {{{javaPackageFull}}}.model.base.ResponseBase;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.NoHandlerFoundException;
+
+import java.util.stream.Collectors;
+
+/**
+ * Global exception handler providing consistent error responses across all endpoints.
+ * Maps exceptions to appropriate HTTP status codes and error codes.
+ */
+@Slf4j
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    /**
+     * Handle validation errors from @Valid annotations
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ResponseBase<Void>> handleValidationException(
+            MethodArgumentNotValidException ex, HttpServletRequest request) {
+
+        String details = ex.getBindingResult().getFieldErrors().stream()
+            .map(FieldError::getDefaultMessage)
+            .collect(Collectors.joining(", "));
+
+        log.warn("Validation error on {}: {}", request.getRequestURI(), details);
+
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ResponseBase.error(
+                ErrorCode.VALIDATION_ERROR.getCode(),
+                details.isEmpty() ? ErrorCode.VALIDATION_ERROR.getDescription() : details
+            ));
+    }
+
+    /**
+     * Handle authentication failures
+     */
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ResponseBase<Void>> handleAuthenticationException(
+            AuthenticationException ex, HttpServletRequest request) {
+
+        log.warn("Authentication failed on {}: {}", request.getRequestURI(), ex.getMessage());
+
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(ResponseBase.error(
+                ErrorCode.UNAUTHORIZED.getCode(),
+                ErrorCode.UNAUTHORIZED.getDescription()
+            ));
+    }
+
+    /**
+     * Handle authorization failures (insufficient permissions)
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ResponseBase<Void>> handleAccessDeniedException(
+            AccessDeniedException ex, HttpServletRequest request) {
+
+        log.warn("Access denied on {}: {}", request.getRequestURI(), ex.getMessage());
+
+        return ResponseEntity
+            .status(HttpStatus.FORBIDDEN)
+            .body(ResponseBase.error(
+                ErrorCode.FORBIDDEN.getCode(),
+                ErrorCode.FORBIDDEN.getDescription()
+            ));
+    }
+
+    /**
+     * Handle resource not found (404)
+     */
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ResponseEntity<ResponseBase<Void>> handleNotFoundException(
+            NoHandlerFoundException ex, HttpServletRequest request) {
+
+        log.debug("Resource not found: {}", request.getRequestURI());
+
+        return ResponseEntity
+            .status(HttpStatus.NOT_FOUND)
+            .body(ResponseBase.error(
+                ErrorCode.RESOURCE_NOT_FOUND.getCode(),
+                ErrorCode.RESOURCE_NOT_FOUND.getDescription()
+            ));
+    }
+
+    /**
+     * Handle illegal argument exceptions
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ResponseBase<Void>> handleIllegalArgumentException(
+            IllegalArgumentException ex, HttpServletRequest request) {
+
+        log.warn("Invalid argument on {}: {}", request.getRequestURI(), ex.getMessage());
+
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(ResponseBase.error(
+                ErrorCode.INVALID_INPUT.getCode(),
+                ex.getMessage()
+            ));
+    }
+
+    /**
+     * Handle all other uncaught exceptions
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ResponseBase<Void>> handleGenericException(
+            Exception ex, HttpServletRequest request) {
+
+        // Log the full stack trace for debugging
+        log.error("Unhandled exception on {}", request.getRequestURI(), ex);
+
+        // Return generic error to client (don't leak internal details)
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(ResponseBase.error(
+                ErrorCode.INTERNAL_ERROR.getCode(),
+                ErrorCode.INTERNAL_ERROR.getDescription()
+            ));
+    }
+}

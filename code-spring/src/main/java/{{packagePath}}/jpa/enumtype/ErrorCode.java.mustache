@@ -1,0 +1,55 @@
+package {{{javaPackageFull}}}.jpa.enumtype;
+
+import lombok.Getter;
+import org.springframework.http.HttpStatus;
+
+/**
+ * Centralized error codes with HTTP status mapping.
+ * Provides consistent error responses across all API endpoints.
+ */
+@Getter
+public enum ErrorCode {
+
+    // Authentication errors (401)
+    UNAUTHORIZED("AUTH001", "Unauthorized access", HttpStatus.UNAUTHORIZED),
+    INVALID_TOKEN("AUTH002", "Invalid or expired token", HttpStatus.UNAUTHORIZED),
+    TOKEN_EXPIRED("AUTH003", "Token has expired", HttpStatus.UNAUTHORIZED),
+
+    // Authorization errors (403)
+    FORBIDDEN("AUTH004", "Access forbidden", HttpStatus.FORBIDDEN),
+    INSUFFICIENT_PERMISSIONS("AUTH005", "Insufficient permissions", HttpStatus.FORBIDDEN),
+
+    // Validation errors (400)
+    VALIDATION_ERROR("VAL001", "Validation error", HttpStatus.BAD_REQUEST),
+    INVALID_INPUT("VAL002", "Invalid input provided", HttpStatus.BAD_REQUEST),
+    MISSING_REQUIRED_FIELD("VAL003", "Missing required field", HttpStatus.BAD_REQUEST),
+
+    // Resource errors (404)
+    RESOURCE_NOT_FOUND("RES001", "Resource not found", HttpStatus.NOT_FOUND),
+    USER_NOT_FOUND("RES002", "User not found", HttpStatus.NOT_FOUND),
+
+    // Conflict errors (409)
+    RESOURCE_ALREADY_EXISTS("CON001", "Resource already exists", HttpStatus.CONFLICT),
+    DUPLICATE_ENTRY("CON002", "Duplicate entry", HttpStatus.CONFLICT),
+
+    // Rate limiting (429)
+    RATE_LIMIT_EXCEEDED("RATE001", "Rate limit exceeded", HttpStatus.TOO_MANY_REQUESTS),
+
+    // Server errors (500)
+    INTERNAL_ERROR("SRV001", "Internal server error", HttpStatus.INTERNAL_SERVER_ERROR),
+    DATABASE_ERROR("SRV002", "Database error", HttpStatus.INTERNAL_SERVER_ERROR),
+    EXTERNAL_SERVICE_ERROR("SRV003", "External service error", HttpStatus.INTERNAL_SERVER_ERROR),
+
+    // Service unavailable (503)
+    SERVICE_UNAVAILABLE("SRV004", "Service temporarily unavailable", HttpStatus.SERVICE_UNAVAILABLE);
+
+    private final String code;
+    private final String description;
+    private final HttpStatus httpStatus;
+
+    ErrorCode(String code, String description, HttpStatus httpStatus) {
+        this.code = code;
+        this.description = description;
+        this.httpStatus = httpStatus;
+    }
+}
